@@ -17,12 +17,12 @@ namespace Movement
     public class Movement : BaseUnityPlugin
     {
         public const string GUID = "waffle.ultrakill.movement";
-        public const string Name = "Movement";
+        public const string Name = "MovementPlus";
         public const string Version = "1.0.0";
 
         public void Start()
         {
-            SettingUIHandler.Pages.Add($"{GUID}.movement_mod", new SettingUIHandler.Page("MOVEMENT MOD"));
+            SettingUIHandler.Pages.Add($"{GUID}.movement_mod", new SettingUIHandler.Page("MOVEMENT+"));
             UltraTweaker.UltraTweaker.AddAssembly(Assembly.GetExecutingAssembly());
         }
     }

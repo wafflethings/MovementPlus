@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Movement.Tweaks
 {
-    [TweakMetadata("Recoil", $"{Movement.GUID}.recoil", "Every weapon gives recoil.", $"{Movement.GUID}.movement_mod", 0, AllowCG: false)]
+    [TweakMetadata("Recoil", $"{Movement.GUID}.recoil", "Every weapon gives recoil.", $"{Movement.GUID}.movement_mod", 1, AllowCG: false)]
     public class Recoil : Tweak
     {
         private Harmony harmony = new($"{Movement.GUID}.recoil");

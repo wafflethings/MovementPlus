@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Movement.Tweaks
 {
-    [TweakMetadata("Double Jump", $"{Movement.GUID}.double_jump", "Jump, but double.", $"{Movement.GUID}.movement_mod", 1, AllowCG: false)]
+    [TweakMetadata("Double Jump", $"{Movement.GUID}.double_jump", "Jump, but double.", $"{Movement.GUID}.movement_mod", 2, AllowCG: false)]
     public class DoubleJump : Tweak
     {
         private Harmony harmony = new($"{Movement.GUID}.double_jump");

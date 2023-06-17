@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 namespace Movement.Tweaks
 {
-    [TweakMetadata("Hook Swing", $"{Movement.GUID}.real_hook", "Swing with the whiplash.", $"{Movement.GUID}.movement_mod", 2, AllowCG: false)]
+    [TweakMetadata("Hook Swing", $"{Movement.GUID}.real_hook", "Swing with the whiplash.", $"{Movement.GUID}.movement_mod",0, AllowCG: false)]
     public class RealHook : Tweak
     {
         private Harmony harmony = new($"{Movement.GUID}.real_hook");
@@ -23,8 +23,10 @@ namespace Movement.Tweaks
             {
                 { "any_surf", new BoolSubsetting(this, new Metadata("Any Surface", "any_surf", "If you should hook on every surface."),
                     new BoolSubsettingElement(), true) },
-                { "space_pull", new BoolSubsetting(this, new Metadata("Space To Pull", "space_pull", "Pull yourself to the center with Space."),
-                    new BoolSubsettingElement(), true) }
+                { "space_pull", new FloatSubsetting(this, new Metadata("Space To Pull", "space_pull", "Amount to pull yourself to the center with Space."),
+                    new SliderFloatSubsettingElement("{0}"), 50, 100, 0) },
+                { "space_short", new FloatSubsetting(this, new Metadata("Space To Shorten", "space_short", "Amount to shorten the hook with Space."),
+                    new SliderFloatSubsettingElement("{0}"), 0, 100, 0) },
             };
         }
 
@@ -41,7 +43,8 @@ namespace Movement.Tweaks
         }
 
         private static GameObject InvisHook;
-        private static bool spacePull;
+        private static float pullSpeed;
+        private static float shortenSpeed;
 
         public override void OnSubsettingUpdate()
         {
@@ -56,7 +59,8 @@ namespace Movement.Tweaks
         public void SetValues()
         {
             Destroy(InvisHook);
-            spacePull = Subsettings["space_pull"].GetValue<bool>();
+            pullSpeed = Subsettings["space_pull"].GetValue<float>();
+            shortenSpeed = Subsettings["space_short"].GetValue<float>();
             TryMakeHookPoint();
         }
 
@@ -166,8 +170,15 @@ namespace Movement.Tweaks
             [HarmonyPatch(typeof(HookArm), nameof(HookArm.Update)), HarmonyPostfix]
             public static void Pull(HookArm __instance)
             {
-                if (__instance.state == HookState.Pulling && !__instance.lightTarget && spacePull && InputManager.Instance.InputSource.Jump.IsPressed)
-                    NewMovement.Instance.rb.velocity = 50 * (HookArm.Instance.caughtTransform.transform.position + HookArm.Instance.caughtPoint - __instance.transform.position).normalized;
+                if (__instance.state == HookState.Pulling && !__instance.lightTarget && InputManager.Instance.InputSource.Jump.IsPressed) 
+                {
+                    gj.linearLimit = new()
+                    {
+                        limit = gj.linearLimit.limit - (Time.deltaTime * shortenSpeed)
+                    };
+
+                    NewMovement.Instance.rb.velocity = pullSpeed * (HookArm.Instance.caughtTransform.transform.position + HookArm.Instance.caughtPoint - __instance.transform.position).normalized;
+                }
             }
         }
     }
