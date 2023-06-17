@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 2331789718
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: movement_assets.bundle
+      Dependencies: {}

@@ -1,0 +1,27 @@
+ManifestFileVersion: 0
+CRC: 1666647083
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: cb779c11abbef4dd093da9c4f56f6c55
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: cea17de082da1dfd38b5ed053fc34ca1
+HashAppended: 0
+ClassTypes:
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 128
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Fonts/GFSGaraldus.otf
+- Assets/Fonts/BowlbyOneSC-Regular.ttf
+- Assets/Fonts/VCR_OSD_MONO_1.001.ttf
+- Assets/Fonts/MuseumSixty.otf
+- Assets/Images/PLINK!!!!.png
+Dependencies: []
