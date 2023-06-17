@@ -12,4 +12,4 @@ Otherwise, download the .zip, and extract it to `ULTRAKILL\BepInEx\plugins`.
 If you aren't using r2mm, you will also seperately have to install [UltraTweaker](https://thunderstore.io/c/ultrakill/p/Waff1e/UltraTweaker).
 
 ## Gameplay
-[![](https://github.com/wafflethings/MovementPlus/assets/60797216/4ee15b45-e1df-43af-86cc-95afb32e29c7)](https://youtu.be/watch?v=FJjxaGe3wOc)
+[![](https://i.ytimg.com/vi/FJjxaGe3wOc/maxresdefault.jpg)](https://youtu.be/watch?v=FJjxaGe3wOc)
