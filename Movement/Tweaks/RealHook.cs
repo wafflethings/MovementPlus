@@ -55,6 +55,7 @@ namespace Movement.Tweaks
         private static GameObject invisHook;
         private static float pullSpeed;
         private static float shortenSpeed;
+        private static HookArmDataStorage hads;
 
         public override void OnSubsettingUpdate()
         {
@@ -72,6 +73,15 @@ namespace Movement.Tweaks
             pullSpeed = Subsettings["space_pull"].GetValue<float>();
             shortenSpeed = Subsettings["space_short"].GetValue<float>();
             TryMakeHookPoint();
+
+            if (GetInstance<RealHook>().Subsettings["custom_model"].GetValue<bool>() && hads == null)
+            {
+                CreateArmModel();
+            }
+            else
+            {
+                hads?.Begone();
+            }
         }
 
         public void TryMakeHookPoint()
@@ -89,6 +99,17 @@ namespace Movement.Tweaks
             }
         }
 
+        public static void CreateArmModel()
+        {
+            HookArm ha = HookArm.Instance;
+
+            if (ha != null && IsGameplayScene())
+            {
+                hads = Instantiate(model, ha.transform).GetComponent<HookArmDataStorage>();
+                hads.Apply();
+            }
+        }
+
         public class RealHookPatches
         {
             private static ConfigurableJoint gj;
@@ -96,10 +117,10 @@ namespace Movement.Tweaks
             [HarmonyPatch(typeof(HookArm), nameof(HookArm.Start)), HarmonyPostfix]
             public static void ReplaceModel(HookArm __instance)
             {
-                __instance.model.SetActive(false);
-                Instantiate(model, __instance.transform).GetComponent<HookArmDataStorage>().Apply();
-                __instance.lr.startColor = Color.white;
-                __instance.lr.endColor = Color.white;
+                if (GetInstance<RealHook>().Subsettings["custom_model"].GetValue<bool>())
+                {
+                    CreateArmModel();
+                }
             }
 
             [HarmonyPatch(typeof(HookArm), nameof(HookArm.Update)), HarmonyPostfix]
@@ -216,9 +237,24 @@ namespace Movement.Tweaks
         public GameObject hookModel;
         public LineRenderer inspectLr;
 
+        private GameObject oldModel;
+        private Animator oldAnim;
+        private Transform oldHand;
+        private Transform oldHook;
+        private GameObject oldHookModel;
+        private LineRenderer oldInspectLr;
+        private Color oldColour;
+
         public void Apply()
         {
             HookArm ha = HookArm.Instance;
+
+            oldModel = ha.model;
+            oldAnim = ha.anim;
+            oldHand = ha.hand;
+            oldHook = ha.hook;
+            oldHookModel = ha.hookModel;
+            oldInspectLr = ha.inspectLr;
 
             ha.model = gameObject;
             ha.anim = anim;
@@ -226,6 +262,30 @@ namespace Movement.Tweaks
             ha.hook = hook;
             ha.hookModel = hookModel;
             ha.inspectLr = inspectLr;
+
+            ha.model.SetActive(oldModel.activeSelf);
+            oldModel.SetActive(false);
+
+            oldColour = ha.lr.startColor;
+            ha.lr.startColor = Color.white;
+            ha.lr.endColor = Color.white;
+        }
+
+        public void Begone()
+        {
+            HookArm ha = HookArm.Instance;
+
+            ha.model = oldModel;
+            ha.anim = oldAnim;
+            ha.hand = oldHand;
+            ha.hook = oldHook;
+            ha.hookModel = oldHookModel;
+            ha.inspectLr = oldInspectLr;
+
+            ha.lr.startColor = oldColour;
+            ha.lr.endColor = oldColour;
+
+            Destroy(gameObject);
         }
     }
 }
