@@ -20,10 +20,25 @@ namespace Movement
         public const string Name = "MovementPlus";
         public const string Version = "1.0.0";
 
+        public static readonly string AssetsPath = Path.Combine(ModPath(), "Assets");
+        public static readonly string BundlePath = Path.Combine(AssetsPath, "movementplus.bundle");
+        public static AssetBundle Bundle;
+
         public void Start()
         {
+            Bundle = AssetBundle.LoadFromFile(BundlePath);
             SettingUIHandler.Pages.Add($"{GUID}.movement_mod", new SettingUIHandler.Page("MOVEMENT+"));
             UltraTweaker.UltraTweaker.AddAssembly(Assembly.GetExecutingAssembly());
+        }
+
+        public static string ModPath(Assembly asm = null)
+        {
+            if (asm == null)
+            {
+                asm = Assembly.GetExecutingAssembly();
+            }
+
+            return asm.Location.Substring(0, asm.Location.LastIndexOf(Path.DirectorySeparatorChar));
         }
     }
 }

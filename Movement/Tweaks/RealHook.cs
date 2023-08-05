@@ -21,6 +21,8 @@ namespace Movement.Tweaks
         {
             Subsettings = new()
             {
+                { "custom_model", new BoolSubsetting(this, new Metadata("Custom Model", "custom_model", "A custom model by Rem_Safe_Space."),
+                    new BoolSubsettingElement(), true) },
                 { "any_surf", new BoolSubsetting(this, new Metadata("Any Surface", "any_surf", "If you should hook on every surface."),
                     new BoolSubsettingElement(), true) },
                 { "space_pull", new FloatSubsetting(this, new Metadata("Space To Pull", "space_pull", "Amount to pull yourself to the center with Space."),
@@ -34,6 +36,13 @@ namespace Movement.Tweaks
         {
             base.OnTweakEnabled();
             harmony.PatchAll(typeof(RealHookPatches));
+            SetValues();
+
+            if (model == null)
+            {
+                model = Movement.Bundle.LoadAsset<GameObject>("Swing Arm.prefab");
+                model.GetComponentInChildren<Renderer>().material.shader = Addressables.LoadAssetAsync<Shader>("Assets/Shaders/Main/ULTRAKILL-vertexlit.shader").WaitForCompletion();
+            }
         }
 
         public override void OnTweakDisabled()
@@ -42,7 +51,8 @@ namespace Movement.Tweaks
             harmony.UnpatchSelf();
         }
 
-        private static GameObject InvisHook;
+        private static GameObject model;
+        private static GameObject invisHook;
         private static float pullSpeed;
         private static float shortenSpeed;
 
@@ -58,7 +68,7 @@ namespace Movement.Tweaks
 
         public void SetValues()
         {
-            Destroy(InvisHook);
+            Destroy(invisHook);
             pullSpeed = Subsettings["space_pull"].GetValue<float>();
             shortenSpeed = Subsettings["space_short"].GetValue<float>();
             TryMakeHookPoint();
@@ -68,20 +78,35 @@ namespace Movement.Tweaks
         {
             if (IsGameplayScene() && Subsettings["any_surf"].GetValue<bool>())
             {
-                InvisHook = Instantiate(Addressables.LoadAssetAsync<GameObject>("Assets/Prefabs/Levels/Interactive/GrapplePoint.prefab").WaitForCompletion());
-                InvisHook.transform.GetChild(0).gameObject.SetActive(false);
-                InvisHook.transform.GetChild(1).gameObject.SetActive(false);
-                InvisHook.GetComponent<Light>().enabled = false;
-                InvisHook.GetComponent<AudioSource>().enabled = false;
-                InvisHook.GetComponent<HookPoint>().grabParticle = new GameObject();
-                InvisHook.GetComponent<HookPoint>().grabParticle.AddComponent<DestroyOnCheckpointRestart>();
-                InvisHook.transform.localScale = Vector3.one * 2;
+                invisHook = Instantiate(Addressables.LoadAssetAsync<GameObject>("Assets/Prefabs/Levels/Interactive/GrapplePoint.prefab").WaitForCompletion());
+                invisHook.transform.GetChild(0).gameObject.SetActive(false);
+                invisHook.transform.GetChild(1).gameObject.SetActive(false);
+                invisHook.GetComponent<Light>().enabled = false;
+                invisHook.GetComponent<AudioSource>().enabled = false;
+                invisHook.GetComponent<HookPoint>().grabParticle = new GameObject();
+                invisHook.GetComponent<HookPoint>().grabParticle.AddComponent<DestroyOnCheckpointRestart>();
+                invisHook.transform.localScale = Vector3.one * 2;
             }
         }
 
         public class RealHookPatches
         {
             private static ConfigurableJoint gj;
+
+            [HarmonyPatch(typeof(HookArm), nameof(HookArm.Start)), HarmonyPostfix]
+            public static void ReplaceModel(HookArm __instance)
+            {
+                __instance.model.SetActive(false);
+                Instantiate(model, __instance.transform).GetComponent<HookArmDataStorage>().Apply();
+                __instance.lr.startColor = Color.white;
+                __instance.lr.endColor = Color.white;
+            }
+
+            [HarmonyPatch(typeof(HookArm), nameof(HookArm.Update)), HarmonyPostfix]
+            public static void FixHandPos(HookArm __instance)
+            {
+                __instance.hand.transform.localPosition = Vector3.zero;
+            }
 
             [HarmonyPatch(typeof(HookArm), nameof(HookArm.Update)), HarmonyPostfix]
             public static void MakeSwing(HookArm __instance)
@@ -124,12 +149,12 @@ namespace Movement.Tweaks
             [HarmonyPatch(typeof(HookArm), nameof(HookArm.Update)), HarmonyPrefix]
             public static void CollideWithWalls(HookArm __instance)
             {
-                if (InvisHook != null && __instance.state == HookState.Ready)
+                if (invisHook != null && __instance.state == HookState.Ready)
                 {
                     Physics.Raycast(CameraController.Instance.transform.position, CameraController.Instance.transform.forward, out RaycastHit raycastHit, 1000000,
                        __instance.enviroMask, QueryTriggerInteraction.Ignore);
 
-                    InvisHook.transform.position = raycastHit.point - CameraController.Instance.transform.forward;
+                    invisHook.transform.position = raycastHit.point - CameraController.Instance.transform.forward;
                 }
             }
 
@@ -180,6 +205,27 @@ namespace Movement.Tweaks
                     NewMovement.Instance.rb.velocity = pullSpeed * (HookArm.Instance.caughtTransform.transform.position + HookArm.Instance.caughtPoint - __instance.transform.position).normalized;
                 }
             }
+        }
+    }
+
+    public class HookArmDataStorage : MonoBehaviour
+    {
+        public Animator anim;
+        public Transform hand;
+        public Transform hook;
+        public GameObject hookModel;
+        public LineRenderer inspectLr;
+
+        public void Apply()
+        {
+            HookArm ha = HookArm.Instance;
+
+            ha.model = gameObject;
+            ha.anim = anim;
+            ha.hand = hand;
+            ha.hook = hook;
+            ha.hookModel = hookModel;
+            ha.inspectLr = inspectLr;
         }
     }
 }
