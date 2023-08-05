@@ -2,6 +2,10 @@
 
 A mod that adds a couple new movement mechanics.
 
+Includes a new arm model for the Whiplash by [Rem_Safe_Space](https://twitter.com/Rem_Safe_Space).
+
+![image](https://github.com/wafflethings/MovementPlus/assets/60797216/aa31481d-0472-47c0-a74d-b227f49b2c6f)
+
 ### [Give me money, if you want.](https://www.patreon.com/Waff1e)
 
 ## Installation
